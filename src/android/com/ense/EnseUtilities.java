@@ -22,8 +22,20 @@ import android.Manifest;
 import android.util.Log;
 import android.net.Uri;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Date;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class EnseUtilities extends CordovaPlugin {
   private static final String TAG = "EnseUtilities";
@@ -223,7 +235,8 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
 }
   public static String uploadFile(String uploadFilePath, String mimetype, String uploadKey, String policyDoc, String policySig) {
       optimizeFileForStreaming(uploadFilePath);
-      if (!sourceFile.isFile()) {
+      File audioFile = new File(uploadFilePath);
+      if (!audioFile.isFile()) {
           Log.e("uploadFile", "Source File not exist :"
                   +uploadFilePath);
           return null;
@@ -260,11 +273,11 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
 
               String fileHeader1 = "--" + boundary + "\r\n"
                       + "Content-Disposition: form-data; name=\"file\"; filename=\""
-                      + fileName + "\"\r\n"
+                      + audioFile.getName() + "\"\r\n"
                       + "Content-Type: application/octet-stream\r\n"
                       + "Content-Transfer-Encoding: binary\r\n";
 
-              long fileLength = sourceFile.length() + tail.length();
+              long fileLength = audioFile.length() + tail.length();
               String fileHeader2 = "Content-length: " + fileLength + "\r\n";
               String fileHeader = fileHeader1 + fileHeader2 + "\r\n";
               String stringData = metadataPart + fileHeader;
@@ -280,7 +293,7 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
 
               int bytesRead;
               byte buf[] = new byte[1024];
-              BufferedInputStream bufInput = new BufferedInputStream(new FileInputStream(sourceFile));
+              BufferedInputStream bufInput = new BufferedInputStream(new FileInputStream(audioFile));
               while ((bytesRead = bufInput.read(buf)) != -1) {
                   // write output
                   out.write(buf, 0, bytesRead);
@@ -333,7 +346,5 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
 
       } // End else block
   }
-}
-
 
 }
