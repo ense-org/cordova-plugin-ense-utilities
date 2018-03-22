@@ -152,26 +152,22 @@ public class EnseUtilities extends CordovaPlugin {
   }
 
   public String getDeviceSecretKey () {
-   String device_secret_key = null;
  //retrieve or request device secret key
      SharedPreferences prefs = this.cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
      String deviceSecretKey = prefs.getString(PREFS_DEVICE_SECRET_KEY, null);
      if (deviceSecretKey != null && !deviceSecretKey.isEmpty()) {
        return deviceSecretKey;
      } else {
-         //request key from API
-         //new GetDeviceKeyTask().execute(ense_api_key);
-         AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", ENSE_API_KEY), new AJAX.X() {
+         //request new key from API
+         return AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", ENSE_API_KEY), new AJAX.X() {
              public String success(int code, final String data) {
                      SharedPreferences.Editor editor = this.cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
                      editor.putString(PREFS_DEVICE_SECRET_KEY, data);
                      editor.apply();
                      return data;
              }
-
              public void failure(int code, final String data) {
-                 //somehow handle not having a device key but at this point
-                 //probably wouldn't have the website cached either, so we do what exactly?????
+                 //somehow handle not having a device key at this point
              }
          });
      }
