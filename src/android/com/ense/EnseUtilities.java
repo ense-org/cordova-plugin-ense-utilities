@@ -47,6 +47,8 @@ public class EnseUtilities extends CordovaPlugin {
   public static MediaPlayer audioPlayer = null;
   public static String currentFilePath = null;
   public static CallbackContext currentCallbackContext;
+  private static final String AWS_ACCESS_KEY_ID = preferences.getString("AWS_ACCESS_KEY_ID", "");
+  private static final String ENSE_API_KEY = preferences.getString("ENSE_API_KEY", "");
 
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -169,9 +171,9 @@ public class EnseUtilities extends CordovaPlugin {
        return deviceSecretKey;
      } else {
          //request new key from API
-         return AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", preferences.getString(ENSE_API_KEY, "")), new AJAX.X() {
+         return AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", ENSE_API_KEY), new AJAX.X() {
              public String success(int code, final String data) {
-                     SharedPreferences.Editor editor = this.cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
+                     SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
                      editor.putString(PREFS_DEVICE_SECRET_KEY, data);
                      editor.apply();
                      return data;
@@ -260,7 +262,7 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
               params.put("key", uploadKey);
               params.put("acl", "public-read");
               params.put("Content-Type", mimetype);
-              params.put("AWSAccessKeyId", preferences.getString(AWS_ACCESS_KEY_ID, ""));
+              params.put("AWSAccessKeyId", AWS_ACCESS_KEY_ID);
               params.put("Policy", policyDoc);
               params.put("Signature", policySig);
 
