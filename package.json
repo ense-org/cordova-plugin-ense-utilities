@@ -1,0 +1,12 @@
+{
+  "name": "cordova-plugin-ense-utilities",
+  "version": "1.0.0",
+  "cordova": {
+    "id": "cordova-plugin-ense-utilities",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  },
+  "description": "Ense's first Cordova plugin."
+}

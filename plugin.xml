@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    id="cordova-plugin-ense-utilities"
+    version="1.0.0">
+    <name>Ense Cordova Plugin</name>
+    <description></description>
+    <license>MIT</license>
+    <keywords></keywords>
+    <repo>https://github.com/ense-org/cordova-plugin-ense-utilities.git</repo>
+    <issue>https://github.com/ense-org/cordova-plugin-ense-utilities/issues</issue>
+
+    <!-- android -->
+    <platform name="android">
+      <js-module src="www/plugin.js" name="plugin">
+        <runs/>
+        <!-- This is the window variable name you want, like window.MyCordovaPlugin -->
+        <clobbers target="EnseUtilities" />
+      </js-module>
+      <config-file target="res/xml/config.xml" parent="/*">
+        <feature name="EnseUtilities">
+          <param name="android-package" value="com.ense.EnseUtilities" />
+          <param name="onload" value="true" />
+        </feature>
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <uses-permission android:name="android.permission.RECORD_AUDIO" />
+        </config-file>
+      </config-file>
+
+      <source-file src="src/android/com/ense/EnseUtilities.java" target-dir="src/com/ense/" />
+      <source-file src="src/android/com/ense/AJAX.java" target-dir="src/com/ense/" />
+      <source-file src="src/android/com/ense/QtFastStart.java" target-dir="src/com/ense/" />
+    </platform>
+
+    <!-- ios -->
+    <platform name="ios">
+        <js-module src="www/plugin.js" name="plugin">
+            <runs/>
+            <clobbers target="EnseUtilities" />
+        </js-module>
+        <config-file target="config.xml" parent="/*">
+            <feature name="EnseUtilities">
+                <param name="ios-package" value="EnseUtilities" onload="true" />
+            </feature>
+        </config-file>
+
+        <header-file src="src/ios/EnseUtilities.h" />
+        <source-file src="src/ios/EnseUtilities.m" />
+    </platform>
+</plugin>
