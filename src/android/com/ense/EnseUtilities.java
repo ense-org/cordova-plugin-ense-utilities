@@ -24,8 +24,6 @@ import android.net.Uri;
 
 import java.io.IOException;
 import java.util.Date;
-import static SensitiveConstants.AWS_ACCESS_KEY_ID;
-import static SensitiveConstants.ENSE_API_KEY;
 
 public class EnseUtilities extends CordovaPlugin {
   private static final String TAG = "EnseUtilities";
@@ -159,7 +157,7 @@ public class EnseUtilities extends CordovaPlugin {
        return deviceSecretKey;
      } else {
          //request new key from API
-         return AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", ENSE_API_KEY), new AJAX.X() {
+         return AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", preferences.getString(ENSE_API_KEY, "")), new AJAX.X() {
              public String success(int code, final String data) {
                      SharedPreferences.Editor editor = this.cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
                      editor.putString(PREFS_DEVICE_SECRET_KEY, data);
@@ -249,7 +247,7 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
               params.put("key", uploadKey);
               params.put("acl", "public-read");
               params.put("Content-Type", mimetype);
-              params.put("AWSAccessKeyId", AWS_ACCESS_KEY_ID);
+              params.put("AWSAccessKeyId", preferences.getString(AWS_ACCESS_KEY_ID, ""));
               params.put("Policy", policyDoc);
               params.put("Signature", policySig);
 
