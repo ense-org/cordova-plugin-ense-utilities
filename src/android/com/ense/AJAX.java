@@ -42,7 +42,7 @@ public class AJAX {
     }
 
     public static interface X{
-        String success(final int code, final String data);
+        void success(final int code, final String data);
         void failure(final int code, final String data);
     }
 

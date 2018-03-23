@@ -8,8 +8,6 @@ import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
-import org.apache.cordova.PluginResult.Status;
-import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.content.SharedPreferences;
@@ -38,19 +36,23 @@ import java.util.Map;
 import javax.net.ssl.HttpsURLConnection;
 
 public class EnseUtilities extends CordovaPlugin {
-  private static final String TAG = "EnseUtilities";
-  public static final String PREFS_NAME = "EnseAccountSettings";
-  public static final String PREFS_DEVICE_SECRET_KEY = "device_secret_key";
-  public static final String RECORD_AUDIO = Manifest.permission.RECORD_AUDIO;
-  public static final int RECORD_AUDIO_REQ_CODE = 0;
-  public static MediaRecorder audioRecorder = null;
-  public static MediaPlayer audioPlayer = null;
-  public static String currentFilePath = null;
-  public static CallbackContext currentCallbackContext;
-  private static final String AWS_ACCESS_KEY_ID = preferences.getString("AWS_ACCESS_KEY_ID", "");
-  private static final String ENSE_API_KEY = preferences.getString("ENSE_API_KEY", "");
+    private static final String TAG = "EnseUtilities";
+    private static final String PREFS_NAME = "EnseAccountSettings";
+    private static final String PREFS_DEVICE_SECRET_KEY_KEY = "device_secret_key";
 
-  @Override
+    private static String AWS_ACCESS_KEY_ID = null;
+    private static String ENSE_API_KEY = null;
+
+    private static final String RECORD_AUDIO = Manifest.permission.RECORD_AUDIO;
+    private static final int RECORD_AUDIO_REQ_CODE = 0;
+    public static MediaRecorder audioRecorder = null;
+    public static MediaPlayer audioPlayer = null;
+    public static String currentFilePath = null;
+    public static CallbackContext currentCallbackContext;
+    public static String device_secret_key = null;
+
+
+    @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
     Log.d(TAG, "Initializing EnseUtilities");
@@ -90,7 +92,7 @@ public class EnseUtilities extends CordovaPlugin {
 
   public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     currentCallbackContext = callbackContext;
-    if(action.equals("echo")) {
+      if(action.equals("echo")) {
         String phrase = args.getString(0);
         // Echo back the first argument
         Log.d(TAG, phrase);
@@ -99,6 +101,7 @@ public class EnseUtilities extends CordovaPlugin {
         final PluginResult result = new PluginResult(PluginResult.Status.OK, (new Date()).toString());
         callbackContext.sendPluginResult(result);
     } else if(action.equals("getDeviceSecretKey")) {
+        ENSE_API_KEY = preferences.getString("ENSE_API_KEY", "");
         String deviceSecretKey = getDeviceSecretKey();
         final PluginResult result = new PluginResult(PluginResult.Status.OK, deviceSecretKey);
         callbackContext.sendPluginResult(result);
@@ -149,13 +152,18 @@ public class EnseUtilities extends CordovaPlugin {
           final PluginResult result = new PluginResult(PluginResult.Status.OK, audioPlayer.getDuration());
           callbackContext.sendPluginResult(result);
       } else if(action.equals("uploadFile")) {
+          AWS_ACCESS_KEY_ID = preferences.getString("AWS_ACCESS_KEY_ID", "");
           cordova.getThreadPool().execute(new Runnable() {
             public void run() {
-              String fileURL = uploadFile(args.getString(0), args.getString(1), args.getString(2), args.getString(3), args.getString(4))
-              final PluginResult result = new PluginResult(PluginResult.Status.OK, fileURL);
-              callbackContext.sendPluginResult(result);
+                try {
+                    String fileURL = uploadFile(args.getString(0), args.getString(1), args.getString(2), args.getString(3), args.getString(4));
+                    final PluginResult result = new PluginResult(PluginResult.Status.OK, fileURL);
+                    callbackContext.sendPluginResult(result);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
-          }
+          });
       } else if(action.equals("logOut")) {
           final PluginResult result = new PluginResult(PluginResult.Status.OK);
           callbackContext.sendPluginResult(result);
@@ -165,24 +173,32 @@ public class EnseUtilities extends CordovaPlugin {
 
   public String getDeviceSecretKey () {
  //retrieve or request device secret key
-     SharedPreferences prefs = this.cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-     String deviceSecretKey = prefs.getString(PREFS_DEVICE_SECRET_KEY, null);
-     if (deviceSecretKey != null && !deviceSecretKey.isEmpty()) {
-       return deviceSecretKey;
-     } else {
-         //request new key from API
-         return AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", ENSE_API_KEY), new AJAX.X() {
-             public String success(int code, final String data) {
-                     SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
-                     editor.putString(PREFS_DEVICE_SECRET_KEY, data);
-                     editor.apply();
-                     return data;
-             }
-             public void failure(int code, final String data) {
-                 //somehow handle not having a device key at this point
-             }
-         });
-     }
+      if (device_secret_key != null && !device_secret_key.isEmpty()) {
+          return device_secret_key;
+      } else {
+          // get it from shared preferences
+          SharedPreferences prefs = this.cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+          String deviceSecretKey = prefs.getString(PREFS_DEVICE_SECRET_KEY_KEY, null);
+          if (deviceSecretKey != null && !deviceSecretKey.isEmpty()) {
+              device_secret_key = deviceSecretKey;
+              return deviceSecretKey;
+          } else {
+              //request new key from API
+              AJAX.post("https://api.ense.nyc/device/register", AJAX.m("api_key", ENSE_API_KEY), new AJAX.X() {
+                  public void success(int code, final String data) {
+                      SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
+                      editor.putString(PREFS_DEVICE_SECRET_KEY_KEY, data);
+                      editor.apply();
+                      device_secret_key = data;
+
+                  }
+                  public void failure(int code, final String data) {
+                      //somehow handle not having a device key at this point
+                  }
+              });
+              return device_secret_key;
+          }
+      }
   }
 
   public String setupRecorder () throws IOException {
