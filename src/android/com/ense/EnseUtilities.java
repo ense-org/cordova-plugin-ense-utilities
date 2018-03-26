@@ -373,7 +373,7 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
       SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
       editor.remove(PREFS_DEVICE_SECRET_KEY_KEY);
       editor.apply();
-      webView.loadUrl(initial_webview_url);
+      // webView.loadUrl(initial_webview_url);
 
 
 //        mMainActivity.runOnUiThread(new Runnable() {
