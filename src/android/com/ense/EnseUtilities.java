@@ -50,11 +50,13 @@ public class EnseUtilities extends CordovaPlugin {
     public static String currentFilePath = null;
     public static CallbackContext currentCallbackContext;
     public static String device_secret_key = null;
+    public static String initial_webview_url = null;
 
 
     @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
+    initial_webview_url = webView.getUrl();
     Log.d(TAG, "Initializing EnseUtilities");
   }
 
@@ -363,6 +365,31 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
           return null;
 
       } // End else block
+  }
+
+  public void logOut() {
+      // delete device key
+      SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
+      editor.remove(PREFS_DEVICE_SECRET_KEY_KEY);
+      editor.apply();
+      webView.loadUrl(initial_webview_url);
+
+
+//        mMainActivity.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+//
+//                WebStorage.getInstance().deleteAllData();
+//                destroyWebView();
+//                // restart app
+//            }
+//        });
+//        Intent i = mContext.getPackageManager()
+//                .getLaunchIntentForPackage( mContext.getPackageName() );
+//        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+//        mContext.startActivity(i);
+
+
   }
 
 }
