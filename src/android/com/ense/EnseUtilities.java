@@ -167,6 +167,7 @@ public class EnseUtilities extends CordovaPlugin {
             }
           });
       } else if(action.equals("logOut")) {
+          logOut();
           final PluginResult result = new PluginResult(PluginResult.Status.OK);
           callbackContext.sendPluginResult(result);
       }
