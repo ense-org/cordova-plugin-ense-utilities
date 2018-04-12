@@ -370,6 +370,7 @@ public static void optimizeFileForStreaming(String uploadFilePath) {
 
   public void logOut() {
       // delete device key
+      device_secret_key = null;
       SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit();
       editor.remove(PREFS_DEVICE_SECRET_KEY_KEY);
       editor.apply();
