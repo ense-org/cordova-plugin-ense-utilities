@@ -94,12 +94,7 @@ public class EnseUtilities extends CordovaPlugin {
 
   public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     currentCallbackContext = callbackContext;
-      if(action.equals("echo")) {
-        String phrase = args.getString(0);
-        // Echo back the first argument
-        Log.d(TAG, phrase);
-    } else if(action.equals("getDate")) {
-        // An example of returning data back to the web layer
+      if(action.equals("getDate")) {
         final PluginResult result = new PluginResult(PluginResult.Status.OK, (new Date()).toString());
         callbackContext.sendPluginResult(result);
     } else if(action.equals("getDeviceSecretKey")) {
@@ -128,49 +123,54 @@ public class EnseUtilities extends CordovaPlugin {
         }
         final PluginResult result = new PluginResult(PluginResult.Status.OK);
         callbackContext.sendPluginResult(result);
-      } else if(action.equals("playAudioFile")) {
-          String filePath = args.getString(0);
-          audioPlayer = MediaPlayer.create(this.cordova.getContext(), Uri.parse(filePath));
-          audioPlayer.setOnPreparedListener((MediaPlayer preppedMediaPlayer) -> preppedMediaPlayer.start());
-          audioPlayer.prepareAsync();
-          final PluginResult result = new PluginResult(PluginResult.Status.OK);
-          callbackContext.sendPluginResult(result);
-      } else if(action.equals("pauseAudioPlayback")) {
-          audioPlayer.pause();
-          final PluginResult result = new PluginResult(PluginResult.Status.OK);
-          callbackContext.sendPluginResult(result);
-      } else if(action.equals("resumeAudioPlayback")) {
-          audioPlayer.start();
-          final PluginResult result = new PluginResult(PluginResult.Status.OK);
-          callbackContext.sendPluginResult(result);
-      } else if(action.equals("stopAudioPlayback")) {
-          audioPlayer.stop();
-          final PluginResult result = new PluginResult(PluginResult.Status.OK);
-          callbackContext.sendPluginResult(result);
-      } else if(action.equals("getPlaybackPosition")) {
-          final PluginResult result = new PluginResult(PluginResult.Status.OK, audioPlayer.getCurrentPosition());
-          callbackContext.sendPluginResult(result);
-      } else if(action.equals("getPlaybackDuration")) {
-          final PluginResult result = new PluginResult(PluginResult.Status.OK, audioPlayer.getDuration());
-          callbackContext.sendPluginResult(result);
-      } else if(action.equals("uploadFile")) {
-          AWS_ACCESS_KEY_ID = preferences.getString("AWS_ACCESS_KEY_ID", "");
-          cordova.getThreadPool().execute(new Runnable() {
-            public void run() {
-                try {
-                    String fileURL = uploadFile(args.getString(0), args.getString(1), args.getString(2), args.getString(3), args.getString(4));
-                    final PluginResult result = new PluginResult(PluginResult.Status.OK, fileURL);
-                    callbackContext.sendPluginResult(result);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-          });
-      } else if(action.equals("logOut")) {
-          logOut();
-          final PluginResult result = new PluginResult(PluginResult.Status.OK);
-          callbackContext.sendPluginResult(result);
-      }
+    } else if(action.equals("playAudioFile")) {
+        String filePath = args.getString(0);
+        audioPlayer = MediaPlayer.create(this.cordova.getContext(), Uri.parse(filePath));
+        audioPlayer.setOnPreparedListener((MediaPlayer preppedMediaPlayer) -> preppedMediaPlayer.start());
+        audioPlayer.prepareAsync();
+        final PluginResult result = new PluginResult(PluginResult.Status.OK);
+        callbackContext.sendPluginResult(result);
+    } else if(action.equals("pauseAudioPlayback")) {
+        audioPlayer.pause();
+        final PluginResult result = new PluginResult(PluginResult.Status.OK);
+        callbackContext.sendPluginResult(result);
+    } else if(action.equals("resumeAudioPlayback")) {
+        audioPlayer.start();
+        final PluginResult result = new PluginResult(PluginResult.Status.OK);
+        callbackContext.sendPluginResult(result);
+    } else if(action.equals("stopAudioPlayback")) {
+        audioPlayer.stop();
+        final PluginResult result = new PluginResult(PluginResult.Status.OK);
+        callbackContext.sendPluginResult(result);
+    } else if(action.equals("getPlaybackPosition")) {
+        final PluginResult result = new PluginResult(PluginResult.Status.OK, audioPlayer.getCurrentPosition());
+        callbackContext.sendPluginResult(result);
+    } else if(action.equals("getPlaybackDuration")) {
+        final PluginResult result = new PluginResult(PluginResult.Status.OK, audioPlayer.getDuration());
+        callbackContext.sendPluginResult(result);
+    } else if(action.equals("uploadFile")) {
+        AWS_ACCESS_KEY_ID = preferences.getString("AWS_ACCESS_KEY_ID", "");
+        cordova.getThreadPool().execute(new Runnable() {
+          public void run() {
+              try {
+                  String fileURL = uploadFile(args.getString(0), args.getString(1), args.getString(2), args.getString(3), args.getString(4));
+                  final PluginResult result = new PluginResult(PluginResult.Status.OK, fileURL);
+                  callbackContext.sendPluginResult(result);
+              } catch (JSONException e) {
+                  e.printStackTrace();
+              }
+          }
+        });
+    } else if(action.equals("logOut")) {
+        logOut();
+        final PluginResult result = new PluginResult(PluginResult.Status.OK);
+        callbackContext.sendPluginResult(result);
+    }  else if(action.equals("deleteLocalFile")) {
+        File audioFile = new File(args.getString(0));
+        boolean deleted  = audioFile.delete();
+        final PluginResult result = new PluginResult(PluginResult.Status.OK, deleted);
+        callbackContext.sendPluginResult(result);
+    }
     return true;
   }
 

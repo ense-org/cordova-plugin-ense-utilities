@@ -4,9 +4,6 @@ var exec = require('cordova/exec');
 var PLUGIN_NAME = 'EnseUtilities';
 
 var EnseUtilities = {
-  echo: function(phrase, successCallback) {
-    exec(successCallback, null, PLUGIN_NAME, 'echo', [phrase]);
-  },
   getDate: function(successCallback) {
     exec(successCallback, null, PLUGIN_NAME, 'getDate', []);
   },
@@ -39,6 +36,9 @@ var EnseUtilities = {
   },
   uploadFile: function(uploadFilePath, mimetype, uploadKey, policyDoc, policySig, successCallback) {
     exec(successCallback, null, PLUGIN_NAME, 'uploadFile', [uploadFilePath, mimetype, uploadKey, policyDoc, policySig]);
+  },
+  deleteLocalFile: function(filePath, successCallback) {
+    exec(successCallback, null, PLUGIN_NAME, 'deleteLocalFile', [filePath]);
   },
   logOut: function(successCallback) {
     exec(successCallback, null, PLUGIN_NAME, 'logOut', []);

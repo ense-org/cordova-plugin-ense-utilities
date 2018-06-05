@@ -72,8 +72,6 @@ public class AJAX {
         StringBuilder result = new StringBuilder();
         boolean first = true;
 
-
-
         for (Map.Entry<String, String> pair : params.entrySet())
         {
             if (first)
