@@ -38,6 +38,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class EnseUtilities extends CordovaPlugin {
     private static final String TAG = "EnseUtilities";
     private static final String PREFS_NAME = "EnseAccountSettings";
+    private static final String PREFS_NONUPLOADED_RECORDINGS_NAME = "EnseNonUploadedRecordings";
     private static final String PREFS_DEVICE_SECRET_KEY_KEY = "device_secret_key";
 
     private static String AWS_ACCESS_KEY_ID = null;
@@ -94,7 +95,7 @@ public class EnseUtilities extends CordovaPlugin {
 
   public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
     currentCallbackContext = callbackContext;
-      if(action.equals("getDate")) {
+    if(action.equals("getDate")) {
         final PluginResult result = new PluginResult(PluginResult.Status.OK, (new Date()).toString());
         callbackContext.sendPluginResult(result);
     } else if(action.equals("getDeviceSecretKey")) {
@@ -106,6 +107,10 @@ public class EnseUtilities extends CordovaPlugin {
         if(cordova.hasPermission(RECORD_AUDIO)) {
           try {
               currentFilePath = setupRecorder();
+              // save filePath to prefs
+              SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NONUPLOADED_RECORDINGS_NAME, Context.MODE_PRIVATE).edit();
+              editor.putString(currentFilePath, {});
+              editor.apply();
               audioRecorder.start();
               final PluginResult result = new PluginResult(PluginResult.Status.OK, currentFilePath);
               callbackContext.sendPluginResult(result);
@@ -116,18 +121,21 @@ public class EnseUtilities extends CordovaPlugin {
               cordova.requestPermission(this, RECORD_AUDIO_REQ_CODE, RECORD_AUDIO);
         }
     } else if(action.equals("stopRecording")) {
-        try {
-            audioRecorder.stop();
-        } catch (IllegalStateException e) {
-            e.printStackTrace();
+      cordova.getThreadPool().execute(new Runnable() {
+        public void run() {
+          try {
+              audioRecorder.stop();
+          } catch (IllegalStateException e) {
+              e.printStackTrace();
+          }
+          final PluginResult result = new PluginResult(PluginResult.Status.OK);
+          callbackContext.sendPluginResult(result);
         }
-        final PluginResult result = new PluginResult(PluginResult.Status.OK);
-        callbackContext.sendPluginResult(result);
+      });
     } else if(action.equals("playAudioFile")) {
         String filePath = args.getString(0);
         audioPlayer = MediaPlayer.create(this.cordova.getContext(), Uri.parse(filePath));
         audioPlayer.setOnPreparedListener((MediaPlayer preppedMediaPlayer) -> preppedMediaPlayer.start());
-        audioPlayer.prepareAsync();
         final PluginResult result = new PluginResult(PluginResult.Status.OK);
         callbackContext.sendPluginResult(result);
     } else if(action.equals("pauseAudioPlayback")) {
@@ -153,7 +161,12 @@ public class EnseUtilities extends CordovaPlugin {
         cordova.getThreadPool().execute(new Runnable() {
           public void run() {
               try {
-                  String fileURL = uploadFile(args.getString(0), args.getString(1), args.getString(2), args.getString(3), args.getString(4));
+                  String filePath = args.getString(0);
+                  String fileURL = uploadFile(filePath, args.getString(1), args.getString(2), args.getString(3), args.getString(4));
+                  // remove filePath from prefs
+                  SharedPreferences.Editor editor = cordova.getContext().getSharedPreferences(PREFS_NONUPLOADED_RECORDINGS_NAME, Context.MODE_PRIVATE).edit();
+                  editor.remove(filePath);
+                  editor.apply();
                   final PluginResult result = new PluginResult(PluginResult.Status.OK, fileURL);
                   callbackContext.sendPluginResult(result);
               } catch (JSONException e) {
